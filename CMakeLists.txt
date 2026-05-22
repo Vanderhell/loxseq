@@ -8,7 +8,7 @@ add_library(loxseq
 
 target_include_directories(loxseq
   PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/include
+    include
 )
 
 target_compile_features(loxseq PUBLIC c_std_99)
@@ -30,3 +30,20 @@ add_executable(loxseq_tests tests/test_loxseq.c)
 target_link_libraries(loxseq_tests PRIVATE loxseq)
 add_test(NAME loxseq_tests COMMAND loxseq_tests)
 
+add_executable(loxseq_headercheck tests/headercheck.c)
+target_link_libraries(loxseq_headercheck PRIVATE loxseq)
+target_include_directories(loxseq_headercheck PRIVATE .)
+if (MSVC)
+  target_compile_options(loxseq_headercheck PRIVATE /W4 /WX)
+else()
+  target_compile_options(loxseq_headercheck PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_test(NAME loxseq_headercheck COMMAND loxseq_headercheck)
+
+install(TARGETS loxseq
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+install(DIRECTORY include/ DESTINATION include)
+install(FILES README.md LICENSE CHANGELOG.md DESTINATION .)
