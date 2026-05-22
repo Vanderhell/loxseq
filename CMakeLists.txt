@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+﻿cmake_minimum_required(VERSION 3.16)
 
 project(loxseq LANGUAGES C)
 
@@ -32,7 +32,6 @@ add_test(NAME loxseq_tests COMMAND loxseq_tests)
 
 add_executable(loxseq_headercheck tests/headercheck.c)
 target_link_libraries(loxseq_headercheck PRIVATE loxseq)
-target_include_directories(loxseq_headercheck PRIVATE .)
 if (MSVC)
   target_compile_options(loxseq_headercheck PRIVATE /W4 /WX)
 else()
