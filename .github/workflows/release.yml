@@ -30,12 +30,7 @@ jobs:
         run: cmake --install build --config Release --prefix dist
 
       - name: Package (zip)
-        shell: bash
-        run: |
-          set -euo pipefail
-          TAG="${GITHUB_REF_NAME}"
-          NAME="loxseq-${TAG}-${{ matrix.os }}"
-          (cd dist && zip -r "../${NAME}.zip" .)
+        run: cmake -E tar cf "loxseq-${{ github.ref_name }}-${{ matrix.os }}.zip" --format=zip -C dist .
 
       - uses: actions/upload-artifact@v4
         with:
@@ -54,4 +49,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*.zip
-
