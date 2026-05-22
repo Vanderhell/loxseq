@@ -1,4 +1,4 @@
-#include <loxseq/loxseq.h>
+﻿#include <loxseq/loxseq.h>
 
 int main(void) {
     loxseq_t seq;
