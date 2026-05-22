@@ -1,0 +1,22 @@
+# Build outputs
+/build/
+/out/
+/cmake-build-*/
+
+# Compilers
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
