@@ -2,7 +2,7 @@
 
 Power-loss-aware step sequencer for embedded C firmware.
 
-loxseq is a small, heap-free C99 library that runs a sequence of named steps,
+loxseq is a small, heap-free **C99** library that runs a sequence of named steps,
 persistently checkpoints the current step, and on reboot decides — based on a
 caller-supplied policy — whether to resume, restart a step, go to safe init, or
 require operator intervention.
@@ -30,7 +30,7 @@ loxseq_recovery_verdict_t v = loxseq_recover(&batch, reboot_reason);
 if (v == LOXSEQ_RECOVERY_RESUME) {
     loxseq_start_resume(&batch, now_ms);
 } else if (v == LOXSEQ_RECOVERY_RESTART) {
-    /* treat as operator decision or restart explicitly */
+    /* restart semantics are application-defined; choose what you want here */
     loxseq_start_resume(&batch, now_ms);
 } else if (v == LOXSEQ_RECOVERY_SAFE_INIT) {
     loxseq_start_safe_init(&batch, now_ms);
