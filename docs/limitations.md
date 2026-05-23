@@ -95,9 +95,6 @@ The library has no internal mutex.
 
 ## Known TODOs before v1.0
 
-- Implementation.
-- Test suite (sequence runners, recovery scenarios, CRC corruption,
-  storage backend faults).
 - libFuzzer harness over storage read paths.
 - Memory profile on Cortex-M0+ with 32-step sequence.
 - Step-table hash in record for OTA detection.

@@ -148,7 +148,8 @@ int main(void) {
 
         case LOXSEQ_RECOVERY_RESTART:
             printf("  -> restarting step\n");
-            loxseq_start_resume(&seq2, 7000);
+            loxseq_start_restart(&seq2, 7000);
+            run_until_done_or_interrupted(&seq2, 7000, 30000, UINT32_MAX);
             break;
 
         case LOXSEQ_RECOVERY_SAFE_INIT:
@@ -158,9 +159,10 @@ int main(void) {
 
         case LOXSEQ_RECOVERY_OPERATOR:
             printf("  -> awaiting operator\n");
+            (void)loxseq_start_operator_wait(&seq2);
             /* Operator says: resume */
-            loxseq_operator_resolve(&seq2, LOXSEQ_RECOVERY_RESUME, 7000);
-            loxseq_start_resume(&seq2, 7000);
+            (void)loxseq_operator_resolve(&seq2, LOXSEQ_RECOVERY_RESUME, 7000);
+            run_until_done_or_interrupted(&seq2, 7000, 30000, UINT32_MAX);
             break;
 
         default:

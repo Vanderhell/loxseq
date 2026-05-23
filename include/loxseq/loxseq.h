@@ -209,7 +209,8 @@ loxseq_err_t loxseq_init(loxseq_t *seq,
                          const loxseq_storage_t *storage);
 
 /* Inspect the saved record and the reboot reason; return the verdict.
- * Does not modify the sequencer state. Call once at boot. */
+ * Does not start or advance the sequencer. May update seq->last_recovery.
+ * Call once at boot. */
 loxseq_recovery_verdict_t loxseq_recover(loxseq_t *seq, loxseq_reboot_reason_t reason);
 
 /* ---------------------------------------------------------------------- */
@@ -219,9 +220,15 @@ loxseq_recovery_verdict_t loxseq_recover(loxseq_t *seq, loxseq_reboot_reason_t r
 /* Start fresh from step 0. Discards any prior checkpoint. */
 loxseq_err_t loxseq_start_fresh(loxseq_t *seq, uint32_t now_ms);
 
-/* Continue from the saved checkpoint. Only valid after a
- * loxseq_recover() that returned RESUME or RESTART. */
+/* Continue from the saved checkpoint (RESUME semantics): preserves the
+ * saved step_entered_at_ms. Only valid after a loxseq_recover() that
+ * returned RESUME. */
 loxseq_err_t loxseq_start_resume(loxseq_t *seq, uint32_t now_ms);
+
+/* Restart the current step from the saved checkpoint (RESTART
+ * semantics): step_entered_at_ms is reset to now_ms. Only valid after a
+ * loxseq_recover() that returned RESTART. */
+loxseq_err_t loxseq_start_restart(loxseq_t *seq, uint32_t now_ms);
 
 /* Skip the saved sequence; go to a safe state. Caller defines what
  * "safe" means by what actions the safe_init step performs. */
@@ -287,4 +294,3 @@ uint16_t loxseq_crc16(const void *buf, size_t len);
 #endif
 
 #endif /* LOXSEQ_H */
-

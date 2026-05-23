@@ -20,9 +20,19 @@ typedef struct {
 } loxseq_record_t;
 ```
 
-`sizeof(loxseq_record_t)` is 24 bytes on typical 32-bit targets, with
-4-byte alignment. The struct layout is stable: subsequent versions may
-extend the reserved field but will not break version 1 layout.
+The storage hook contract is for the raw bytes of `loxseq_record_t` as
+compiled: storage backends must persist exactly `sizeof(loxseq_record_t)`
+bytes and return them unchanged on read.
+
+On the current header layout, `sizeof(loxseq_record_t)` is 20 bytes on
+the hosted compilers used in CI (GCC/Clang/MSVC). The project includes
+compile-time tests for the expected size and key field offsets.
+
+Limitation: because this is a C struct binary image (not an explicit
+byte-serialized format), padding and endianness are ABI-dependent. If
+your storage is shared across different compilers/ABIs or across
+architectures, you must treat that as a separate compatibility
+problem (or introduce explicit serialization in your application).
 
 The CRC covers all bytes of the record except the `crc16` field itself.
 Use `loxseq_crc16()` (CRC-16/CCITT-FALSE) or supply the same algorithm.

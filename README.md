@@ -73,7 +73,7 @@ loxseq is a small, heap-free C99 library that checkpoints step progress to calle
     switch (v) {
         case LOXSEQ_RECOVERY_COLD_START: loxseq_start_fresh(&seq, now_ms); break;
         case LOXSEQ_RECOVERY_RESUME:     loxseq_start_resume(&seq, now_ms); break;
-        case LOXSEQ_RECOVERY_RESTART:    loxseq_start_resume(&seq, now_ms); break;
+        case LOXSEQ_RECOVERY_RESTART:    loxseq_start_restart(&seq, now_ms); break;
         case LOXSEQ_RECOVERY_SAFE_INIT:  loxseq_start_safe_init(&seq, now_ms); break;
         case LOXSEQ_RECOVERY_OPERATOR:   loxseq_start_operator_wait(&seq); break;
     }
@@ -83,6 +83,21 @@ loxseq is a small, heap-free C99 library that checkpoints step progress to calle
     cmake -S . -B build
     cmake --build build --config Release
     ctest --test-dir build --output-on-failure -C Release
+
+## Validation
+
+The unit tests currently cover:
+- CRC-16/CCITT-FALSE known vector
+- invalid `loxseq_init()` arguments
+- recovery downgrade behavior and cold-start fallbacks (read failure, CRC corruption, unsupported version, out-of-range step index)
+- RESUME vs RESTART `step_entered_at_ms` semantics (including `loxseq_operator_resolve(..., LOXSEQ_RECOVERY_RESTART, ...)`)
+- reboot counter increment and 0xFF saturation on restart/resume
+- branching behavior (with/without pending branch target)
+- precondition gating, timeout, pause/resume, abort
+- completion erases checkpoint; erase failure returns `LOXSEQ_ERR_STORAGE`
+- write failure on transition fails the sequencer
+- `loxseq_current_tag()` behavior and `loxseq_step_age_ms()` wraparound
+- compile-time record layout checks (size and field offsets)
 
 ## Docs
 

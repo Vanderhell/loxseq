@@ -30,13 +30,15 @@ Continue this step from where it left off.
 - Steps whose duration matters and was already partly elapsed when
   power failed. The library tracks `step_entered_at_ms`, but on
   resume that timestamp is from the previous power session. Either
-  reset it (RESUME_FROM_START semantics) or have your action read it
-  and decide.
+  reset it (RESTART semantics via `loxseq_start_restart()`) or have
+  your action read it and decide.
 
 ### LOXSEQ_RESUME_FROM_START
 
 The sequence is at the right step; restart the step's logic from its
 own beginning. `step_entered_at_ms` is updated to `now_ms` on resume.
+Use `loxseq_start_restart()` when `loxseq_recover()` returns
+`LOXSEQ_RECOVERY_RESTART`.
 
 **Good fit:**
 - Steps with a definite "start phase" that is itself idempotent

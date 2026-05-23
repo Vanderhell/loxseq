@@ -113,7 +113,7 @@ static loxseq_step_status_t action_hold(loxseq_t *seq, uint32_t now_ms,
 its `step_entered_at_ms` to `now_ms`. After a resume with
 `RESUME_AT_STEP`, this elapsed time is preserved (it counts from the
 *original* entry, before the reboot). After `RESUME_FROM_START`, it
-resets to 0.
+resets to 0 (when the application starts with `loxseq_start_restart()`).
 
 ## With `microlog`
 

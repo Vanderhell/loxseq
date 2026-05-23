@@ -100,14 +100,18 @@ loxseq_recovery_verdict_t loxseq_recover(loxseq_t *seq, loxseq_reboot_reason_t r
 
     loxseq_record_t r;
     if (!read_checkpoint(seq, &r)) {
+        seq->last_recovery = LOXSEQ_RECOVERY_COLD_START;
         return LOXSEQ_RECOVERY_COLD_START;
     }
     if (r.step_index >= seq->step_count) {
+        seq->last_recovery = LOXSEQ_RECOVERY_COLD_START;
         return LOXSEQ_RECOVERY_COLD_START;
     }
 
     loxseq_resume_policy_t pol = seq->steps[r.step_index].resume_policy;
-    return downgrade_policy(pol, reason);
+    loxseq_recovery_verdict_t v = downgrade_policy(pol, reason);
+    seq->last_recovery = v;
+    return v;
 }
 
 static loxseq_err_t start_from_record(loxseq_t *seq,
@@ -122,8 +126,8 @@ static loxseq_err_t start_from_record(loxseq_t *seq,
     seq->sequence_started_at_ms = r->sequence_started_at_ms;
     seq->generation = r->generation;
 
-    if (seq->reboot_count_in_step < 0xFF) {
-        seq->reboot_count_in_step = (uint8_t)(r->reboot_count_in_step + 1);
+    if (r->reboot_count_in_step < 0xFF) {
+        seq->reboot_count_in_step = (uint8_t)(r->reboot_count_in_step + 1U);
     } else {
         seq->reboot_count_in_step = 0xFF;
     }
@@ -137,7 +141,12 @@ static loxseq_err_t start_from_record(loxseq_t *seq,
     seq->pending_next_step = -1;
 
     seq->generation++;
-    return write_checkpoint(seq);
+    loxseq_err_t wrc = write_checkpoint(seq);
+    if (wrc != LOXSEQ_OK) {
+        seq->state = LOXSEQ_STATE_FAILED;
+        return wrc;
+    }
+    return LOXSEQ_OK;
 }
 
 loxseq_err_t loxseq_start_fresh(loxseq_t *seq, uint32_t now_ms) {
@@ -154,7 +163,12 @@ loxseq_err_t loxseq_start_fresh(loxseq_t *seq, uint32_t now_ms) {
     seq->generation = 1;
     seq->reboot_count_in_step = 0;
     seq->pending_next_step = -1;
-    return write_checkpoint(seq);
+    loxseq_err_t wrc = write_checkpoint(seq);
+    if (wrc != LOXSEQ_OK) {
+        seq->state = LOXSEQ_STATE_FAILED;
+        return wrc;
+    }
+    return LOXSEQ_OK;
 }
 
 loxseq_err_t loxseq_start_safe_init(loxseq_t *seq, uint32_t now_ms) {
@@ -181,6 +195,13 @@ loxseq_err_t loxseq_start_resume(loxseq_t *seq, uint32_t now_ms) {
     loxseq_record_t r;
     if (!read_checkpoint(seq, &r)) return LOXSEQ_ERR_NOT_FOUND;
     return start_from_record(seq, &r, false, now_ms);
+}
+
+loxseq_err_t loxseq_start_restart(loxseq_t *seq, uint32_t now_ms) {
+    if (!seq || !seq->initialised) return LOXSEQ_ERR_INVALID_ARG;
+    loxseq_record_t r;
+    if (!read_checkpoint(seq, &r)) return LOXSEQ_ERR_NOT_FOUND;
+    return start_from_record(seq, &r, true, now_ms);
 }
 
 loxseq_err_t loxseq_operator_resolve(loxseq_t *seq,
@@ -331,4 +352,3 @@ const char *loxseq_current_tag(const loxseq_t *seq) {
 loxseq_state_t loxseq_state(const loxseq_t *seq) {
     return seq ? seq->state : LOXSEQ_STATE_IDLE;
 }
-
