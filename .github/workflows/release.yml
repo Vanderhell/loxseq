@@ -30,7 +30,7 @@ jobs:
         run: cmake --install build --config Release --prefix dist
 
       - name: Package (zip)
-        run: cmake -E tar cf "loxseq-${{ github.ref_name }}-${{ matrix.os }}.zip" --format=zip -C dist .
+        run: cmake -E chdir dist cmake -E tar cf "../loxseq-${{ github.ref_name }}-${{ matrix.os }}.zip" --format=zip .
 
       - uses: actions/upload-artifact@v4
         with:
